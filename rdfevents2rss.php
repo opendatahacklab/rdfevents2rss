@@ -1,9 +1,10 @@
+<?php
+//Setto l'header per far capire agli user agent che si tratta di una pagina che offre feed RSS in formato ATOM.
+header('Content-type: application/atom+xml');
+?>
 <?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
 <?php
-//Setto l'header per far capire agli user agent che si tratta di una pagina che offre feed RSS ATOM.
-header('Content-type: application/atom+xml');
-
 /*
  * L'intero tool si basa sulla seguente libreria per comunicare con il database SPARQL
  * Maggiori info sulla libreria qui: http://graphite.ecs.soton.ac.uk/sparqllib/
@@ -14,7 +15,7 @@ require_once( "sparqllib.php" );
 $db = sparql_connect( "http://dydra.com/cristianolongo/odhl/sparql" );
 if( !$db ) { 
     print $db->errno() . ": " . $db->error(). "\n";
-	exit;
+    exit;
 }
 
 //Setto i prefissi "event", "locn", "time"
@@ -36,7 +37,7 @@ $query = "SELECT ?e ?label ?address ?time WHERE {
 $result = $db->query( $query ); 
 if( !$result ) { 
     print $db->errno() . ": " . $db->error(). "\n";
-	exit; 
+    exit; 
 }
 $fields = $result->field_array( $result );
 
