@@ -41,10 +41,17 @@ if( !$result ) {
 }
 $fields = $result->field_array( $result );
 
-//Una funzione che genera un id univoco di un feed o di una entry basato sul link dello stesso
-function getIdFromUrl($url) {
-	//TODO secondo strategia consigliata qui 
-    return $url;
+//Una funzione che genera un id univoco di un feed o di una entry basato sul link dello stesso e sulla sua data di creazione.
+function getIdFromUrl($url, $dateAtomFormat) {
+   $date = date("Y-m-d", strtotime($dateAtomFormat));
+   $url = preg_replace('/https?:\/\/|www./', '', $url);
+   if ( strpos($url, '/') !== false) {
+      $ex = explode('/', $url);
+      $urlpredomain = $ex['0'];
+   }
+   $urlpostdomain = str_replace($urlpredomain, "", $url);
+   $id = "tag:" . $urlpredomain . "," . $date . ":" . $urlpostdomain;
+   return $id;
 }
 
 //Imposto e stampo le informazioni da inserire nei campi del feed
@@ -52,9 +59,11 @@ $feedTitle = "Feed eventi opendatahacklab";
 $feedSubtitle = "Tutti gli eventi opendatahacklab a portata di feed";
 $feedHomePageUrl = "https://opendatahacklab.github.io/";
 $feedSelfUrl = "https://opendatahacklab.github.io/rdfevents2rss.php";
-$feedId = getIdFromUrl($feedSelfUrl);
-$feedUpdatedField = "[TODO timestamp ultima entry inserita]";
+$feedUpdatedField = date(DateTime::ATOM);
+$feedId = getIdFromUrl($feedSelfUrl, $feedUpdatedField);
 $feedIconUrl = "https://opendatahacklab.github.io/imgs/logo_cog4_ter.png";
+$feedAuthorName = "Biagio Robert Pappalardo";
+$feedAuthorEmail = "vandir92@gmail.com";
 ?>
 <title><?=$feedTitle?></title>
 <subtitle><?=$feedSubtitle?></subtitle>
@@ -63,16 +72,18 @@ $feedIconUrl = "https://opendatahacklab.github.io/imgs/logo_cog4_ter.png";
 <id><?=$feedId?></id>
 <updated><?=$feedUpdatedField?></updated>
 <logo><?=$feedIconUrl?></logo>
+<author>
+<name><?=$feedAuthorName?></name>
+<email><?=$feedAuthorEmail?></email>
+</author>
 <?php
 //Imposta e stampa un entry del feed per ciascun evento ottenuto dalla query precedente
 while( $row = $result->fetch_array() ) :
 	$entryTitle = $row["label"];
 	$entryUrl = $row["e"];
-	$entryId = getIdFromUrl($entryUrl);
-	$entryUpdated = date(DateTime::ATOM);
+        $entryUpdated = date(DateTime::ATOM);
+	$entryId = getIdFromUrl($entryUrl, $entryUpdated);
 	$entrySummary = "Riassunto dell'evento: " . $entryTitle;
-	$entryAuthorName = "BRP";
-	$entryAuthorEmail = "vandir92@gmail.com";
 ?>
 <entry>
 <title><?=$entryTitle?></title>
@@ -80,10 +91,6 @@ while( $row = $result->fetch_array() ) :
 <id><?=$entryId?></id>
 <updated><?=$entryUpdated?></updated>
 <summary><?=$entrySummary?></summary>
-<author>
-<name><?=$entryAuthorName?></name>
-<email><?=$entryAuthorEmail?></email>
-</author>
 </entry>
 <?php endwhile; ?>
 </feed>
