@@ -1,14 +1,14 @@
 <?php
 //Setto l'header per far capire agli user agent che si tratta di una pagina che offre feed RSS in formato ATOM.
-header('Content-type: application/atom+xml');
+header('Content-type: application/atom+xml; charset=UTF-8');
 
 /* 
  * Impostazioni locali in italiano, utilizzato per la stampa di data e ora 
  * (il server deve avere il locale italiano installato
  */
 setlocale(LC_TIME, 'it_IT');
+echo "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n";
 ?>
-<?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
 <?php
 /*
@@ -110,7 +110,6 @@ do {
 ?>
 <entry>
 <title><?=$entryTitle?></title>
-<link rel="alternate" type="text/html" href="<?=$entryUrl?>"/>
 <id><?=$entryId?></id>
 <updated><?=$entryUpdated?></updated>
 <summary><?=$entrySummary?></summary>
