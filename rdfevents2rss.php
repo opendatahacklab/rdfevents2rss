@@ -1,6 +1,12 @@
 <?php
 //Setto l'header per far capire agli user agent che si tratta di una pagina che offre feed RSS in formato ATOM.
 header('Content-type: application/atom+xml');
+
+/* 
+ * Impostazioni locali in italiano, utilizzato per la stampa di data e ora 
+ * (il server deve avere il locale italiano installato
+ */
+setlocale(LC_TIME, 'it_IT');
 ?>
 <?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
@@ -22,18 +28,21 @@ if( !$db ) {
 $db->ns( "event","http://purl.org/NET/c4dm/event.owl#" );
 $db->ns( "locn","http://www.w3.org/ns/locn#" );
 $db->ns( "time","http://www.w3.org/2006/time#" );
+$db->ns( "dcterms","http://purl.org/dc/terms/" );
 
 //Imposto ed eseguo la query per estrarre tutti gli eventi, in caso di errore esco
-$query = "SELECT ?e ?label ?address ?time WHERE { 
-    ?e a event:Event .
-	?e rdfs:label ?label .
-	?e event:place ?p . 
-	?p locn:address ?a . 
-	?a locn:fullAddress ?address .
-	?e event:time ?timeInterval .
-	?timeInterval time:hasBeginning ?begin .
-	?begin time:inXSDDateTime ?time 
-}";
+$query = "SELECT ?e ?label ?address ?time ?modified 
+	WHERE{
+  		?e a event:Event .
+		?e rdfs:label ?label .
+		?e event:place ?p . 
+		?p locn:address ?a . 
+		?a locn:fullAddress ?address .
+		?e event:time ?timeInterval .
+		?timeInterval time:hasBeginning ?begin .
+		?begin time:inXSDDateTime ?time .
+  	?e dcterms:modified ?modified
+	}";
 $result = $db->query( $query ); 
 if( !$result ) { 
     print $db->errno() . ": " . $db->error(). "\n";
@@ -42,15 +51,9 @@ if( !$result ) {
 $fields = $result->field_array( $result );
 
 //Una funzione che genera un id univoco di un feed o di una entry basato sul link dello stesso e sulla sua data di creazione.
-function getIdFromUrl($url, $dateAtomFormat) {
-   $date = date("Y-m-d", strtotime($dateAtomFormat));
+function getIdFromUrl($url) {
    $url = preg_replace('/https?:\/\/|www./', '', $url);
-   if ( strpos($url, '/') !== false) {
-      $ex = explode('/', $url);
-      $urlpredomain = $ex['0'];
-   }
-   $urlpostdomain = str_replace($urlpredomain, "", $url);
-   $id = "tag:" . $urlpredomain . "," . $date . ":" . $urlpostdomain;
+   $id = "tag:" . $url;
    return $id;
 }
 
@@ -81,9 +84,11 @@ $feedAuthorEmail = "vandir92@gmail.com";
 while( $row = $result->fetch_array() ) :
 	$entryTitle = $row["label"];
 	$entryUrl = $row["e"];
-        $entryUpdated = date(DateTime::ATOM);
+    	$entryUpdated = $row['modified'];
 	$entryId = getIdFromUrl($entryUrl, $entryUpdated);
-	$entrySummary = "Riassunto dell'evento: " . $entryTitle;
+	$entrySummary = $entryTitle . " - " . 
+			"Indirizzo: " . $row['address'] . " - " .
+			"Data: " . strftime("%A %d %B %Y alle ore %H:%M" , strtotime($row['time']));
 ?>
 <entry>
 <title><?=$entryTitle?></title>
