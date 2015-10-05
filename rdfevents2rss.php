@@ -41,28 +41,44 @@ $query = "SELECT ?e ?label ?address ?time ?modified
 		?e event:time ?timeInterval .
 		?timeInterval time:hasBeginning ?begin .
 		?begin time:inXSDDateTime ?time .
-  	?e dcterms:modified ?modified
-	}";
-$result = $db->query( $query ); 
+  		?e dcterms:modified ?modified
+	}
+	ORDER BY DESC(?modified)";
+$result = $db->query( $query );  
 if( !$result ) { 
     print $db->errno() . ": " . $db->error(). "\n";
     exit; 
 }
-$fields = $result->field_array( $result );
+$result->field_array( $result );
 
 //Una funzione che genera un id univoco di un feed o di una entry basato sul link dello stesso e sulla sua data di creazione.
-function getIdFromUrl($url) {
+function getIdFromUrl($url, $dateAtomFormat) {
+   $date = date("Y-m-d", strtotime($dateAtomFormat));
    $url = preg_replace('/https?:\/\/|www./', '', $url);
-   $id = "tag:" . $url;
+   if ( strpos($url, '/') !== false) {
+      $ex = explode('/', $url);
+      $urlpredomain = $ex['0'];
+   }
+   $urlpostdomain = str_replace($urlpredomain, "", $url);
+   $id = "tag:" . $urlpredomain . "," . $date . ":" . $urlpostdomain;
    return $id;
 }
+
+/* 
+ * Cerco il campo "modified" più alto (che corrisponderà al campo <updated> dell'ultima entry che si inserirà) 
+ * per impostarlo come campo <updated> del feed. Esso è il primo perchè i risultati sono ordinati in base a questo campo.
+ */
+$maxTimestamp = 0;
+$row = $result->fetch_array();
+$maxTimestamp = $row['modified'];
+
 
 //Imposto e stampo le informazioni da inserire nei campi del feed
 $feedTitle = "Feed eventi opendatahacklab";
 $feedSubtitle = "Tutti gli eventi opendatahacklab a portata di feed";
 $feedHomePageUrl = "https://opendatahacklab.github.io/";
 $feedSelfUrl = "https://opendatahacklab.github.io/rdfevents2rss.php";
-$feedUpdatedField = date(DateTime::ATOM);
+$feedUpdatedField = $maxTimestamp;
 $feedId = getIdFromUrl($feedSelfUrl, $feedUpdatedField);
 $feedIconUrl = "https://opendatahacklab.github.io/imgs/logo_cog4_ter.png";
 $feedAuthorName = "Biagio Robert Pappalardo";
@@ -81,14 +97,16 @@ $feedAuthorEmail = "vandir92@gmail.com";
 </author>
 <?php
 //Imposta e stampa un entry del feed per ciascun evento ottenuto dalla query precedente
-while( $row = $result->fetch_array() ) :
+// Usa un ciclo while perchè il primo "$row = $result->fetch_array()" è stato chiamato sopra
+// e non ho trovato un modo per resettarlo (data-seek non esiste a quanto pare)
+do {
 	$entryTitle = $row["label"];
 	$entryUrl = $row["e"];
-    	$entryUpdated = $row['modified'];
+	$entryUpdated = $row['modified'];
 	$entryId = getIdFromUrl($entryUrl, $entryUpdated);
 	$entrySummary = $entryTitle . " - " . 
-			"Indirizzo: " . $row['address'] . " - " .
-			"Data: " . strftime("%A %d %B %Y alle ore %H:%M" , strtotime($row['time']));
+					"Indirizzo: " . $row['address'] . " - " .
+					"Data: " . strftime("%A %d %B %Y alle ore %H:%M" , strtotime($row['time']));
 ?>
 <entry>
 <title><?=$entryTitle?></title>
@@ -97,5 +115,5 @@ while( $row = $result->fetch_array() ) :
 <updated><?=$entryUpdated?></updated>
 <summary><?=$entrySummary?></summary>
 </entry>
-<?php endwhile; ?>
+<?php }while( $row = $result->fetch_array() ); ?>
 </feed>
