@@ -100,7 +100,7 @@ $feedAuthorName = "Biagio Robert Pappalardo";
 $feedAuthorEmail = "vandir92@gmail.com";
 
 //TODO updated
-$feed=new AtomFeedGenerator($feedId, $feedTitle, new DateTime(),
+$feed=new AtomFeedGenerator($feedId, $feedTitle, new DateTime($maxTimestamp),
 		$feedSelfUrl, $feedAuthorName, null, $feedAuthorEmail);
 /* <link href="<?=$feedHomePageUrl?>" /> */
 /* <logo><?=$feedIconUrl?></logo> */
@@ -117,7 +117,7 @@ do {
 			'Indirizzo: ' . trim($row['address']) . 
 			' - Data: ' . strftime("%A %d %B %Y alle ore %H:%M" , strtotime($row['time']));
 	
-	$feed->addEntryWithTextContent($entryId, $entryTitle, new DateTime(), $entryContent);
+	$feed->addEntryWithTextContent($entryId, $entryTitle, new DateTime($entryUpdated), $entryContent);
 }while( $row = $result->fetch_array() );
 
 /* <entry>
