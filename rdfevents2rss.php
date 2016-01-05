@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright 2015 Biagio Robert Pappalardo and Cristiano Longo
+ * Copyright 2016 Biagio Robert Pappalardo and Cristiano Longo
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
@@ -15,6 +15,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 //Setto l'header per far capire agli user agent che si tratta di una pagina che offre feed RSS in formato ATOM.
 header('Content-type: application/atom+xml; charset=UTF-8');
 
@@ -23,15 +24,13 @@ header('Content-type: application/atom+xml; charset=UTF-8');
  * (il server deve avere il locale italiano installato
  */
 setlocale(LC_TIME, 'it_IT');
-echo "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n";
-?>
-<feed xmlns="http://www.w3.org/2005/Atom">
-<?php
+
 /*
  * L'intero tool si basa sulla seguente libreria per comunicare con il database SPARQL
  * Maggiori info sulla libreria qui: http://graphite.ecs.soton.ac.uk/sparqllib/
  */
 require_once( "sparqllib.php" );
+require_once( "AtomFeedGenerator.php" );
 
 //Mi collego al database e in caso di errore esco.
 $db = sparql_connect( "http://dydra.com/cristianolongo/odhl/sparql" );
@@ -90,7 +89,7 @@ $maxTimestamp = $row['modified'];
 
 
 //Imposto e stampo le informazioni da inserire nei campi del feed
-$feedTitle = "Feed eventi opendatahacklab";
+$feedTitle = "Eventi opendatahacklab";
 $feedSubtitle = "Tutti gli eventi opendatahacklab a portata di feed";
 $feedHomePageUrl = "https://opendatahacklab.github.io/";
 $feedSelfUrl = "https://opendatahacklab.github.io/rdfevents2rss.php";
@@ -99,19 +98,13 @@ $feedId = getIdFromUrl($feedSelfUrl, $feedUpdatedField);
 $feedIconUrl = "https://opendatahacklab.github.io/imgs/logo_cog4_ter.png";
 $feedAuthorName = "Biagio Robert Pappalardo";
 $feedAuthorEmail = "vandir92@gmail.com";
-?>
-<title><?=$feedTitle?></title>
-<subtitle><?=$feedSubtitle?></subtitle>
-<link href="<?=$feedHomePageUrl?>" />
-<link href="<?=$feedSelfUrl?>" rel="self" />
-<id><?=$feedId?></id>
-<updated><?=$feedUpdatedField?></updated>
-<logo><?=$feedIconUrl?></logo>
-<author>
-<name><?=$feedAuthorName?></name>
-<email><?=$feedAuthorEmail?></email>
-</author>
-<?php
+
+//TODO updated
+$feed=new AtomFeedGenerator($feedId, $feedTitle, new DateTime(),
+		$feedSelfUrl, $feedAuthorName, null, $feedAuthorEmail);
+/* <link href="<?=$feedHomePageUrl?>" /> */
+/* <logo><?=$feedIconUrl?></logo> */
+
 //Imposta e stampa un entry del feed per ciascun evento ottenuto dalla query precedente
 // Usa un ciclo while perchè il primo "$row = $result->fetch_array()" è stato chiamato sopra
 // e non ho trovato un modo per resettarlo (data-seek non esiste a quanto pare)
@@ -120,15 +113,19 @@ do {
 	$entryUrl = $row["e"];
 	$entryUpdated = $row['modified'];
 	$entryId = getIdFromUrl($entryUrl, $entryUpdated);
-	$entrySummary = $entryTitle . " - " . 
-					"Indirizzo: " . $row['address'] . " - " .
-					"Data: " . strftime("%A %d %B %Y alle ore %H:%M" , strtotime($row['time']));
-?>
-<entry>
+	$entryContent = trim($entryTitle) . ' - ' .
+			'Indirizzo: ' . trim($row['address']) . 
+			' - Data: ' . strftime("%A %d %B %Y alle ore %H:%M" , strtotime($row['time']));
+	
+	$feed->addEntryWithTextContent($entryId, $entryTitle, new DateTime(), $entryContent);
+}while( $row = $result->fetch_array() );
+
+/* <entry>
 <title><?=$entryTitle?></title>
 <id><?=$entryId?></id>
 <updated><?=$entryUpdated?></updated>
 <summary><?=$entrySummary?></summary>
-</entry>
-<?php }while( $row = $result->fetch_array() ); ?>
-</feed>
+</entry> */
+
+echo $feed->getFeed();
+?>
