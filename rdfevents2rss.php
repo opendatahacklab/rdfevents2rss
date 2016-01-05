@@ -90,12 +90,10 @@ $maxTimestamp = $row['modified'];
 
 //Imposto e stampo le informazioni da inserire nei campi del feed
 $feedTitle = "Eventi opendatahacklab";
-$feedSubtitle = "Tutti gli eventi opendatahacklab a portata di feed";
 $feedHomePageUrl = "https://opendatahacklab.github.io/";
-$feedSelfUrl = "https://opendatahacklab.github.io/rdfevents2rss.php";
+$feedSelfUrl = "http://opendatahacklab.github.io/events/feed.atom";
 $feedUpdatedField = $maxTimestamp;
 $feedId = getIdFromUrl($feedSelfUrl, $feedUpdatedField);
-$feedIconUrl = "https://opendatahacklab.github.io/imgs/logo_cog4_ter.png";
 $feedAuthorName = "Biagio Robert Pappalardo";
 $feedAuthorEmail = "vandir92@gmail.com";
 
@@ -103,8 +101,9 @@ $feedAuthorEmail = "vandir92@gmail.com";
 $feed=new AtomFeedGenerator($feedId, $feedTitle, new DateTime($maxTimestamp),
 		$feedSelfUrl, $feedAuthorName, null, $feedAuthorEmail);
 $feed->addFeedAuthor("Cristiano Longo", null, "longo@dmi.unict.it");
+$feed->addFeedLogo("https://opendatahacklab.github.io/imgs/logo_cog4_ter.png");
+$feed->addFeedHomepage("https://opendatahacklab.github.io");
 /* <link href="<?=$feedHomePageUrl?>" /> */
-/* <logo><?=$feedIconUrl?></logo> */
 
 //Imposta e stampa un entry del feed per ciascun evento ottenuto dalla query precedente
 // Usa un ciclo while perchè il primo "$row = $result->fetch_array()" è stato chiamato sopra

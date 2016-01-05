@@ -57,7 +57,7 @@ class AtomFeedGenerator{
 	 * 
 	 * @param DOMElement $el the element to which add the author 
 	 * @param string $name (mandatory) author name
-	 * @param string $url (optional) homepage of the authom
+	 * @param string $uri (optional) homepage of the authom
 	 * @param string $email (optional) e-mail address of the author
 	 */
 	private function addAuthor($el, $name, $uri, $email){
@@ -75,12 +75,36 @@ class AtomFeedGenerator{
 	 * Add an author block to the feed element.
 	 * 
 	 * @param string $name (mandatory) author name
-	 * @param string $url (optional) homepage of the authom
+	 * @param string $uri (optional) homepage of the authom
 	 * @param string $email (optional) e-mail address of the author
 	 */
 	public function addFeedAuthor($name, $uri, $email){
 		$this->addAuthor($this->feedEl, $name, $uri, $email);		
 	}
+	
+	
+	/**
+	 * Add feed logo
+	 * 
+	 * @param string $uri
+	 */
+	public function addFeedLogo($uri){
+		$this->feedEl->appendChild(
+				$this->doc->createElement('logo', $uri));	
+	}
+	
+	/**
+	 * Add feed home page as alternate link
+	 *
+	 * @param string $uri
+	 */
+	public function addFeedHomepage($uri){
+		$linkEl=$this->doc->createElement('link');
+		$this->feedEl->appendChild($linkEl);
+		$linkEl->setAttribute('href',$uri);
+		$linkEl->setAttribute('rel','alternate');
+	}
+	
 	/**
 	 * Add an entry with textual content
 	 * 
