@@ -70,6 +70,17 @@ class AtomFeedGenerator{
 			$authorEl->appendChild($this->doc->createElement("email", $email));
 	}
 	
+	
+	/**
+	 * Add an author block to the feed element.
+	 * 
+	 * @param string $name (mandatory) author name
+	 * @param string $url (optional) homepage of the authom
+	 * @param string $email (optional) e-mail address of the author
+	 */
+	public function addFeedAuthor($name, $uri, $email){
+		$this->addAuthor($this->feedEl, $name, $uri, $email);		
+	}
 	/**
 	 * Add an entry with textual content
 	 * 

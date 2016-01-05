@@ -102,6 +102,7 @@ $feedAuthorEmail = "vandir92@gmail.com";
 //TODO updated
 $feed=new AtomFeedGenerator($feedId, $feedTitle, new DateTime($maxTimestamp),
 		$feedSelfUrl, $feedAuthorName, null, $feedAuthorEmail);
+$feed->addFeedAuthor("Cristiano Longo", null, "longo@dmi.unict.it");
 /* <link href="<?=$feedHomePageUrl?>" /> */
 /* <logo><?=$feedIconUrl?></logo> */
 
