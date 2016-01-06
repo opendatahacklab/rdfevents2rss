@@ -113,9 +113,9 @@ do {
 	$entryUrl = $row["e"];
 	$entryUpdated = $row['modified'];
 	$entryId = getIdFromUrl($entryUrl, $entryUpdated);
-	$entryContent = trim($entryTitle) . ' - ' .
-			'Indirizzo: ' . trim($row['address']) . 
-			' - Data: ' . strftime("%A %d %B %Y alle ore %H:%M" , strtotime($row['time']));
+	$entryContent = trim($entryTitle) . ' - '
+			. trim($row['address']) . 
+			' - ' . strftime("%d %B %Y %H:%M" , strtotime($row['time']));
 	
 	$feed->addEntryWithTextContent($entryId, $entryTitle, new DateTime($entryUpdated), $entryContent);
 }while( $row = $result->fetch_array() );
