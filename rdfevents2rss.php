@@ -102,8 +102,8 @@ $feed=new AtomFeedGenerator($feedId, $feedTitle, new DateTime($maxTimestamp),
 		$feedSelfUrl, $feedAuthorName, null, $feedAuthorEmail);
 $feed->addFeedAuthor("Cristiano Longo", null, "longo@dmi.unict.it");
 $feed->addFeedLogo("https://opendatahacklab.github.io/imgs/logo_cog4_ter.png");
-$feed->addFeedHomepage("https://opendatahacklab.github.io");
-/* <link href="<?=$feedHomePageUrl?>" /> */
+//IFTTT does not like multiple links
+//$feed->addFeedHomepage("https://opendatahacklab.github.io");
 
 //Imposta e stampa un entry del feed per ciascun evento ottenuto dalla query precedente
 // Usa un ciclo while perchè il primo "$row = $result->fetch_array()" è stato chiamato sopra
