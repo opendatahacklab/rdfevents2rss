@@ -44,9 +44,10 @@ $db->ns( "event","http://purl.org/NET/c4dm/event.owl#" );
 $db->ns( "locn","http://www.w3.org/ns/locn#" );
 $db->ns( "time","http://www.w3.org/2006/time#" );
 $db->ns( "dcterms","http://purl.org/dc/terms/" );
+$db->ns( "foaf","http://xmlns.com/foaf/0.1/" );
 
 //Imposto ed eseguo la query per estrarre tutti gli eventi, in caso di errore esco
-$query = "SELECT ?e ?label ?address ?time ?modified 
+$query = "SELECT ?e ?label ?address ?time ?modified ?homepage ?description
 	WHERE{
   		?e a event:Event .
 		?e rdfs:label ?label .
@@ -56,8 +57,10 @@ $query = "SELECT ?e ?label ?address ?time ?modified
 		?e event:time ?timeInterval .
 		?timeInterval time:hasBeginning ?begin .
 		?begin time:inXSDDateTime ?time .
-  		?e dcterms:modified ?modified
-	}
+  		?e dcterms:modified ?modified .
+  		OPTIONAL { ?e foaf:homepage ?homepage } .
+  		OPTIONAL { ?e rdfs:comment ?description }
+}
 	ORDER BY DESC(?modified)";
 $result = $db->query( $query );  
 if( !$result ) { 
@@ -91,17 +94,14 @@ $maxTimestamp = $row['modified'];
 //Imposto e stampo le informazioni da inserire nei campi del feed
 $feedTitle = "Eventi opendatahacklab";
 $feedHomePageUrl = "https://opendatahacklab.github.io/";
-$feedSelfUrl = "http://opendatahacklab.github.io/events/feed.atom";
+$feedSelfUrl = "http://dev.opendatasicilia.it/opendatahacklab/rdfevents2rss/feed.php";
 $feedUpdatedField = $maxTimestamp;
 $feedId = getIdFromUrl($feedSelfUrl, $feedUpdatedField);
-$feedAuthorName = "Biagio Robert Pappalardo";
-$feedAuthorEmail = "vandir92@gmail.com";
 
 //TODO updated
 $feed=new AtomFeedGenerator($feedId, $feedTitle, new DateTime($maxTimestamp),
-		$feedSelfUrl, $feedAuthorName, null, $feedAuthorEmail);
-$feed->addFeedAuthor("Cristiano Longo", null, "longo@dmi.unict.it");
-$feed->addFeedLogo("https://opendatahacklab.github.io/imgs/logo_cog4_ter.png");
+		$feedSelfUrl, "opendatahacklab", null, "longo@dmi.unict.it");
+$feed->addFeedLogo("http://dev.opendatasicilia.it/opendatahacklab/commons/imgs/logo_cog4_ter.png");
 //IFTTT does not like multiple links
 //$feed->addFeedHomepage("https://opendatahacklab.github.io");
 
@@ -116,8 +116,9 @@ do {
 	$entryContent = trim($entryTitle) . ' - '
 			. trim($row['address']) . 
 			' - ' . strftime("%d %B %Y %H:%M" , strtotime($row['time']));
+	if (isset($row['description'])) $entryContent.="\n ".$row['description'];
 	
-	$feed->addEntryWithTextContent($entryId, $entryTitle, new DateTime($entryUpdated), $entryContent);
+	$feed->addEntryWithTextContent($entryId, $entryTitle, new DateTime($entryUpdated), $entryContent, $row['homepage']);
 }while( $row = $result->fetch_array() );
 
 /* <entry>

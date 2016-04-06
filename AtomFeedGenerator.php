@@ -112,12 +112,19 @@ class AtomFeedGenerator{
 	 * @param string $title 
 	 * @param string $updated last update of the entry as DateTime object
 	 * @param string $content the entry content as plain text
+	 * @param string $link optional link to the source content
 	 */
-	public function addEntryWithTextContent($id, $title, $updated, $content){
+	public function addEntryWithTextContent($id, $title, $updated, $content, $link){
 		$entryEl=$this->addEntry($id, $title, $updated);
 		$contentEl=$this->doc->createElement("content", $content);
 		$contentEl->setAttribute('type', 'text');
 		$entryEl->appendChild($contentEl);		
+		
+		if (isset($link)){
+			$linkEl=$this->doc->createElement("link");
+			$linkEl->setAttribute("href",$link);
+			$entryEl->appendChild($linkEl);
+		}
 	}
 	
 	/**
