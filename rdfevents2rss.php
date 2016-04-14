@@ -93,15 +93,15 @@ $maxTimestamp = $row['modified'];
 
 //Imposto e stampo le informazioni da inserire nei campi del feed
 $feedTitle = "Eventi opendatahacklab";
-$feedHomePageUrl = "https://opendatahacklab.github.io/";
-$feedSelfUrl = "http://dev.opendatasicilia.it/opendatahacklab/rdfevents2rss/feed.php";
+$feedHomePageUrl = "http://opendatahacklab.org/";
+$feedSelfUrl = "http://opendatahacklab.org/rdfevents2rss/rdfevents2rss.php";
 $feedUpdatedField = $maxTimestamp;
 $feedId = getIdFromUrl($feedSelfUrl, $feedUpdatedField);
 
 //TODO updated
 $feed=new AtomFeedGenerator($feedId, $feedTitle, new DateTime($maxTimestamp),
 		$feedSelfUrl, "opendatahacklab", null, "longo@dmi.unict.it");
-$feed->addFeedLogo("http://dev.opendatasicilia.it/opendatahacklab/commons/imgs/logo_cog4_ter.png");
+$feed->addFeedLogo("http://opendatahacklab.org/commons/imgs/logo_cog4_ter.png");
 //IFTTT does not like multiple links
 //$feed->addFeedHomepage("https://opendatahacklab.github.io");
 
